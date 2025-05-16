@@ -4,7 +4,7 @@ import openai
 
 # === INTERFACE DO APP ===
 st.set_page_config(page_title="Análise de Vendas com IA", layout="centered")
-st.title("📊 Análise Inteligente de Vendas com ChatGPT")
+st.title("📊 Análise Inteligente de Vendas com ChatGPT (GPT-3.5)")
 st.write("Envie um arquivo Excel com dados de vendas e metas por região para obter uma análise automatizada com IA.")
 
 # === ENTRADA DA CHAVE DE API ===
@@ -14,7 +14,7 @@ api_key = st.text_input("🔑 Insira sua chave da API OpenAI:", type="password")
 arquivo = st.file_uploader("📁 Envie a planilha Excel (.xlsx)", type=["xlsx"])
 
 if api_key and arquivo:
-    openai.api_key = api_key
+    client = openai.OpenAI(api_key=api_key)
     df = pd.read_excel(arquivo)
     st.write("📄 Pré-visualização dos dados:", df.head())
 
@@ -36,8 +36,8 @@ if api_key and arquivo:
 
         if st.button("🚀 Gerar Análise com IA"):
             with st.spinner("Analisando com IA..."):
-                response = openai.ChatCompletion.create(
-                    model="gpt-4",
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
                     messages=[
                         {"role": "system", "content": "Você é um analista de BI especialista em vendas."},
                         {"role": "user", "content": prompt}
@@ -45,7 +45,7 @@ if api_key and arquivo:
                     temperature=0.5,
                     max_tokens=500
                 )
-                resumo_ia = response['choices'][0]['message']['content']
+                resumo_ia = response.choices[0].message.content
                 st.subheader("✅ Resumo Gerado pela IA")
                 st.markdown(resumo_ia)
 

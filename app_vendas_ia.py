@@ -1,36 +1,40 @@
 import pandas as pd
 import streamlit as st
 
-# === INTERFACE DO APP ===
-st.set_page_config(page_title="Análise Simulada com IA", layout="centered")
-st.title("📊 Análise Inteligente de Vendas (Simulado)")
-st.write("Envie um arquivo Excel com dados de vendas e metas por região. A resposta da IA será simulada para fins de teste.")
+# === CONFIGURAÇÃO DO APP ===
+st.set_page_config(page_title="Análise de Vendas com IA", layout="centered")
+st.title("📊 DSViewData - Análise Inteligente de Vendas")
+st.write("Envie sua planilha de vendas e receba uma análise automática com IA (simulado para MVP).")
 
-# === UPLOAD DO ARQUIVO ===
-arquivo = st.file_uploader("📁 Envie a planilha Excel (.xlsx)", type=["xlsx"])
+# === LINK PARA PLANILHA MODELO ===
+with st.expander("📁 Baixe o modelo de planilha para envio"):
+    st.markdown("[Clique aqui para baixar](https://dsviewdata.com/modelo_vendas.xlsx)")
+
+# === UPLOAD DA PLANILHA ===
+arquivo = st.file_uploader("Envie sua planilha preenchida (.xlsx)", type=["xlsx"])
 
 if arquivo:
     df = pd.read_excel(arquivo)
-    st.write("📄 Pré-visualização dos dados:", df.head())
+    colunas_esperadas = ["Data", "Região", "Produto", "Vendedor", "Vendas", "Meta Região"]
 
-    try:
+    if not all(col in df.columns for col in colunas_esperadas):
+        st.error("❌ A planilha está com colunas incorretas. Baixe o modelo e siga o formato padrão.")
+    else:
+        st.success("✅ Planilha recebida com sucesso.")
+        st.write("📊 Pré-visualização dos dados:", df.head())
+
         resumo = df.groupby("Região").agg(
             Total_Vendas=("Vendas", "sum"),
             Meta_Total=("Meta Região", "sum")
         ).reset_index()
 
-        # Exibe o resumo numérico
-        st.subheader("📊 Total por Região")
+        st.subheader("📈 Total por Região")
         st.dataframe(resumo)
 
         if st.button("🚀 Gerar Análise Simulada"):
-            st.subheader("✅ Resumo Gerado (Simulado)")
-            texto = (
-                "A região Sul apresentou o melhor desempenho, superando a meta com um total acumulado de R$ 51.500. "
-                "O Centro-Oeste também atingiu sua meta. Já as regiões Nordeste e Sudeste ficaram abaixo do esperado, "
-                "com diferenças de R$ 7.500 e R$ 5.500, respectivamente. Recomendam-se ações de reforço nessas regiões para os próximos ciclos."
+            st.subheader("✅ Análise Inteligente (Simulada)")
+            st.markdown(
+                "A região Sul superou as metas com folga, seguida por Centro-Oeste. "
+                "Nordeste e Sudeste ficaram abaixo das metas e requerem ações de reforço. "
+                "Sugerimos campanhas regionais e foco nos produtos de maior ticket médio."
             )
-            st.markdown(texto)
-
-    except Exception as e:
-        st.error(f"Erro na análise: {e}")
